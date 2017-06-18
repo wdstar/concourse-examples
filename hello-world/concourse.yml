@@ -10,7 +10,7 @@ resources:
     branch: master
 
 jobs:
-- name: hello-world
+- name: say-hello
   plan:
   - get: src-git
   - task: say-hello
