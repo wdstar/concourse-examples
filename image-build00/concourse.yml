@@ -1,0 +1,35 @@
+---
+# $ fly -t target sp -p image-build00 -c concourse.yml -l ~/credentials-test.yml
+resources:
+- name: src-git
+  type: git
+  source:
+    uri: https://gitlab.io.example.com/concourse/examples.git
+    branch: master
+    # for the internal CA signed server certificate
+    skip_ssl_verification: true
+- name: docker-reg
+  type: docker-image
+  source:
+    repository: gitlab.io.example.com:5050/concourse/examples/image-build00
+    tag: 0.0.1  # default: latest
+    username: {{docker-id}}
+    password: {{docker-pw}}
+    ca_certs:
+      - domain: gitlab.io.example.com:5050
+        cert: {{docker-reg-ca-cert}}
+
+jobs:
+- name: build-img
+  plan:
+  - get: src-git
+    trigger: false
+  - task: ci-build
+    file: src-git/image-build00/ci/build.yml
+  - put: docker-reg
+    params:
+      build: docker-build  # <- src-git/image-build00/ci/build.yml
+      #build: src-git/image-build00
+      tag_as_latest: true  # default: false
+    get_params:
+      skip_download: true  # default: false

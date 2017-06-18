@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+- name: src-git
+
+outputs:
+- name: docker-build
+
+run:
+  path: /bin/sh
+  args:
+  - -c
+  - |
+    cp -R ./src-git/image-build00/*                     ./docker-build
+    echo '['`date '+%Y/%m/%d %H:%M:%S'`'] '`uname -a` > ./docker-build/ci-output/build-env.log
+    # NG: Even if you write it to the input directory, the following resources and tasks can't read it.
+    #echo '['`date '+%Y/%m/%d %H:%M:%S'`'] '`uname -a` > ./src-git/image-build00/ci-output/build-env.log
+ 

@@ -1,0 +1,8 @@
+---
+version: '2'
+services:
+  docker-image:
+    restart: 'no'
+    build: ./
+    image: gitlab.io.example.com:5050/concourse/examples/image-build00:0.0.1
+    #command: /bin/sh

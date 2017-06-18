@@ -1,0 +1,17 @@
+---
+# $ fly -t target sp -p hello-world -c concourse.yml
+resources:
+- name: src-git
+  type: git
+  source:
+    #uri: https://github.com/wdstar/concourse-examples
+    uri: https://gitlab.io.example.com/concourse/examples.git
+    skip_ssl_verification: true
+    branch: master
+
+jobs:
+- name: hello-world
+  plan:
+  - get: src-git
+  - task: say-hello
+    file: src-git/hello-world/say-hello.yml
