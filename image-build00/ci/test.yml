@@ -1,0 +1,29 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: gitlab.io.example.com:5050/concourse/examples/image-build00
+    tag: 0.0.1
+    # workaround!!
+    insecure_registries:
+    - gitlab.io.example.com:5050
+    # NG, setting disable
+    #registry_mirror: https://registry.docker.example.com:5000
+    #ca_certs:
+    #- domain: gitlab.io.example.com:5050
+    #  cert: {{docker-reg-ca-cert}}
+    #- domain: registry.docker.example.com:5000
+    #  cert: {{docker-reg-ca-cert}}
+
+inputs:
+- name: src-git  # for exstra test resources.
+
+run:
+  path: /bin/sh
+  args:
+  - -c
+  - |
+    date
+    cat /var/log/build-env.log

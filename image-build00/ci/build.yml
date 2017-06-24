@@ -5,6 +5,11 @@ image_resource:
   type: docker-image
   source:
     repository: alpine
+    # NG, setting disable
+    #registry_mirror: https://registry.docker.example.com:5000
+    #ca_certs:
+    #- domain: registry.docker.example.com:5000
+    #  cert: {{docker-reg-ca-cert}}
 
 inputs:
 - name: src-git
