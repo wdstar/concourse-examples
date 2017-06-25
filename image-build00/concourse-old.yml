@@ -13,23 +13,22 @@ resources:
   source:
     repository: gitlab.io.example.com:5050/concourse/examples/image-build00
     tag: 0.0.1  # default: latest
-    # ((param)) style: fly >= 3.2.0
-    username: ((docker-id))
-    password: ((docker-pw))
-    registry_mirror: https://((registry-mirror-domain))
+    username: {{docker-id}}
+    password: {{docker-pw}}
+    registry_mirror: {{registry-mirror}}
     ca_certs:
     - domain: gitlab.io.example.com:5050
-      cert: ((docker-reg-ca-cert))
-    - domain: ((registry-mirror-domain))
-      cert: ((docker-reg-ca-cert))
+      cert: {{docker-reg-ca-cert}}
+    - domain: {{registry-mirror-domain}}
+      cert: {{docker-reg-ca-cert}}
 - name: alpine-latest
   type: docker-image
   source:
     repository: alpine
-    registry_mirror: https://((registry-mirror-domain))
+    registry_mirror: {{registry-mirror}}
     ca_certs:
-    - domain: ((registry-mirror-domain))
-      cert: ((docker-reg-ca-cert))
+    - domain: {{registry-mirror-domain}}
+      cert: {{docker-reg-ca-cert}}
 
 jobs:
 - name: build-img
