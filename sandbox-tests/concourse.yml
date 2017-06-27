@@ -1,0 +1,34 @@
+---
+# $ fly -t target sp -p sandbox-tests -c concourse.yml -l ~/credentials.yml
+resources:
+- name: src-git
+  type: git
+  source:
+    #uri: https://github.com/wdstar/concourse-examples
+    uri: https://gitlab.io.example.com/concourse/examples.git
+    skip_ssl_verification: true
+    branch: master
+
+jobs:
+- name: sandbox-tests
+  plan:
+  - get: src-git
+  - task: params-test
+    params:
+      TEST_STR: Test!
+      CA_CERT: ((docker-reg-ca-cert))
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      inputs:
+      - name: src-git
+      run:
+        path: /bin/sh
+        args:
+        - -c
+        - |
+          echo "TEST_STR: ${TEST_STR}"
+          echo "CA certificate: ${CA_CERT}"
