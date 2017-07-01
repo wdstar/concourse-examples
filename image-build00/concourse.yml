@@ -6,13 +6,15 @@ resources:
   source:
     uri: https://gitlab.io.example.com/concourse/examples.git
     branch: master
+    paths:
+    - image-build00
     # for the internal CA signed server certificate
     skip_ssl_verification: true
 - name: docker-reg
   type: docker-image
   source:
     repository: gitlab.io.example.com:5050/concourse/examples/image-build00
-    tag: 0.0.1  # default: latest
+    #tag: 0.0.1  # default: latest
     # ((param)) style: fly >= 3.2.0
     username: ((docker-id))
     password: ((docker-pw))
@@ -35,7 +37,7 @@ jobs:
 - name: build-img
   plan:
   - get: src-git
-    trigger: false
+    trigger: true
   - get: alpine-latest
   - task: ci-build
     file: src-git/image-build00/ci/build.yml
@@ -45,6 +47,7 @@ jobs:
     params:
       build: docker-build  # <- src-git/image-build00/ci/build.yml
       #build: src-git/image-build00
+      tag: src-git/image-build00/tag
       tag_as_latest: true  # default: false
     get_params:
       #skip_download: true  # default: false

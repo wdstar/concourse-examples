@@ -8,11 +8,14 @@ resources:
     uri: https://gitlab.io.example.com/concourse/examples.git
     skip_ssl_verification: true
     branch: master
+    paths:
+    - sandbox-tests
 
 jobs:
 - name: sandbox-tests
   plan:
   - get: src-git
+    trigger: true
   - task: params-test
     params:
       TEST_STR: Test!

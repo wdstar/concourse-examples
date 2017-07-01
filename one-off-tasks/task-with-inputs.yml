@@ -1,0 +1,19 @@
+---
+# fly -t target e -c task-with-inputs.yml -i src-git=./
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+- name: src-git
+
+run:
+  path: /bin/sh
+  args:
+  - -c
+  - |
+    cat ./src-git/dummy.txt
+    echo '['`date '+%Y/%m/%d %H:%M:%S'`'] Success!'

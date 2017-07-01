@@ -6,12 +6,15 @@ resources:
   source:
     #uri: https://github.com/wdstar/concourse-examples
     uri: https://gitlab.io.example.com/concourse/examples.git
-    skip_ssl_verification: true
+    paths:
+    - hello-world
     branch: master
+    skip_ssl_verification: true
 
 jobs:
 - name: say-hello
   plan:
   - get: src-git
+    trigger: true
   - task: say-hello
     file: src-git/hello-world/say-hello.yml

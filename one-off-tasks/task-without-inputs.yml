@@ -1,0 +1,15 @@
+---
+# fly -t target e -c task-without-inputs.yml
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+run:
+  path: /bin/sh
+  args:
+  - -c
+  - |
+    echo '['`date '+%Y/%m/%d %H:%M:%S'`'] Success!'
