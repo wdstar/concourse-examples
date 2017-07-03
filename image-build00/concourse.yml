@@ -55,3 +55,21 @@ jobs:
   - task: ci-test
     file: src-git/image-build00/ci/test.yml
     image: docker-reg  # overrides the task's image_reosurce.
+- name: img-updated
+  plan:
+  - get: docker-reg
+    params:
+      skip_download: true
+    trigger: true
+  - get: alpine-latest
+  - task: update-message
+    image: alpine-latest
+    config:
+      platform: linux
+      run:
+        path: /bin/sh
+        args:
+        - -c
+        - |
+          sleep 5s
+          echo 'image-build00 image updated!'
