@@ -10,11 +10,14 @@ resources:
     - hello-world
     branch: master
     skip_ssl_verification: true
+  #check_every: 1h  # default: 1m
 
 jobs:
 - name: say-hello
   plan:
   - get: src-git
+    params:
+      depth: 5
     trigger: true
   - task: say-hello
     file: src-git/hello-world/say-hello.yml

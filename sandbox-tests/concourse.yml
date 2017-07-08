@@ -10,11 +10,14 @@ resources:
     branch: master
     paths:
     - sandbox-tests
+  #check_every: 1h  # default: 1m
 
 jobs:
 - name: sandbox-tests
   plan:
   - get: src-git
+    params:
+      depth: 5
     trigger: true
   - task: params-test
     params:

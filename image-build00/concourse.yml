@@ -8,13 +8,31 @@ resources:
     branch: master
     paths:
     - image-build00
+    #disable_ci_skip: true  # default: false
     # for the internal CA signed server certificate
+    username: ((git-id))
+    password: ((git-pw))
     skip_ssl_verification: true
+  #check_every: 1h  # default: 1m
+- name: tag-ver
+  type: semver
+  source:
+    driver: git
+    uri: git@gitlab.io.example.com:concourse/examples.git
+    #uri: https://gitlab.io.example.com/concourse/examples.git
+    branch: version
+    file: image-build00/tag
+    private_key: ((git-private-key))
+    git_user: ((git-user))
+    #username: ((git-id))
+    #password: ((git-pw))
+    #skip_ssl_verification: true  # N/A
+  check_every: 12h
 - name: docker-reg
   type: docker-image
   source:
     repository: gitlab.io.example.com:5050/concourse/examples/image-build00
-    #tag: 0.0.1  # default: latest
+    #tag: latest  # for get step
     # ((param)) style: fly >= 3.2.0
     username: ((docker-id))
     password: ((docker-pw))
@@ -24,6 +42,7 @@ resources:
       cert: ((docker-reg-ca-cert))
     - domain: ((registry-mirror-domain))
       cert: ((docker-reg-ca-cert))
+  #check_every: 1h  # default: 1m
 - name: alpine-latest
   type: docker-image
   source:
@@ -32,12 +51,19 @@ resources:
     ca_certs:
     - domain: ((registry-mirror-domain))
       cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
 
 jobs:
 - name: build-img
   plan:
   - get: src-git
+    params:
+      depth: 5  # 1: NG in some cases (the latest commit with '[ci skip]' label?!), fatal: reference is not a tree
     trigger: true
+  #- put: tag-ver  # alternative: atomic put
+  - get: tag-ver
+    params:
+      bump: patch
   - get: alpine-latest
   - task: ci-build
     file: src-git/image-build00/ci/build.yml
@@ -47,11 +73,23 @@ jobs:
     params:
       build: docker-build  # <- src-git/image-build00/ci/build.yml
       #build: src-git/image-build00
-      tag: src-git/image-build00/tag
+      tag: tag-ver/version
+      #tag: src-git/image-build00/tag
       tag_as_latest: true  # default: false
     get_params:
       #skip_download: true  # default: false
       skip_download: false  # set false for the following ci-test task.
+  - put: tag-ver
+    params:
+      file: tag-ver/version
+  - put: src-git
+    params:
+      repository: src-git
+      tag_prefix: image-build00-
+      tag: tag-ver/version
+      only_tag: true
+      #annotate: tag-ver/version  # NG!?
+      #annotate:   # path to a file containing the annotation message.
   - task: ci-test
     file: src-git/image-build00/ci/test.yml
     image: docker-reg  # overrides the task's image_reosurce.

@@ -13,6 +13,7 @@ image_resource:
 
 inputs:
 - name: src-git
+#- name: tag-ver
 
 outputs:
 - name: docker-build
