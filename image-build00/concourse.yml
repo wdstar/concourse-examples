@@ -56,15 +56,16 @@ resources:
 jobs:
 - name: build-img
   plan:
-  - get: src-git
-    params:
-      depth: 5  # 1: NG in some cases (the latest commit with '[ci skip]' label?!), fatal: reference is not a tree
-    trigger: true
-  #- put: tag-ver  # alternative: atomic put
-  - get: tag-ver
-    params:
-      bump: patch
-  - get: alpine-latest
+  - aggregate:
+    - get: src-git
+      params:
+        depth: 5  # 1: NG in some cases (the latest commit with '[ci skip]' label?!), fatal: reference is not a tree
+      trigger: true
+    #- put: tag-ver  # alternative: atomic put
+    - get: tag-ver
+      params:
+        bump: patch
+    - get: alpine-latest
   - task: ci-build
     file: src-git/image-build00/ci/build.yml
     # for testing typically.
@@ -79,27 +80,29 @@ jobs:
     get_params:
       #skip_download: true  # default: false
       skip_download: false  # set false for the following ci-test task.
-  - put: tag-ver
-    params:
-      file: tag-ver/version
-  - put: src-git
-    params:
-      repository: src-git
-      tag_prefix: image-build00-
-      tag: tag-ver/version
-      only_tag: true
-      #annotate: tag-ver/version  # NG!?
-      #annotate:   # path to a file containing the annotation message.
-  - task: ci-test
-    file: src-git/image-build00/ci/test.yml
-    image: docker-reg  # overrides the task's image_reosurce.
+  - aggregate:
+    - put: tag-ver
+      params:
+        file: tag-ver/version
+    - put: src-git
+      params:
+        repository: src-git
+        tag_prefix: image-build00-
+        tag: tag-ver/version
+        only_tag: true
+        #annotate: tag-ver/version  # NG!?
+        #annotate:   # path to a file containing the annotation message.
+    - task: ci-test
+      file: src-git/image-build00/ci/test.yml
+      image: docker-reg  # overrides the task's image_reosurce.
 - name: img-updated
   plan:
-  - get: docker-reg
-    params:
-      skip_download: true
-    trigger: true
-  - get: alpine-latest
+  - aggregate:
+    - get: docker-reg
+      params:
+        skip_download: true
+      trigger: true
+    - get: alpine-latest
   - task: update-message
     image: alpine-latest
     config:
