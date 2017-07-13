@@ -1,0 +1,85 @@
+---
+# $ fly -t target sp -p scripting-langs -c scripting-langs.yml -l ~/credentials.yml
+resources:
+- name: perl-cache
+  type: docker-image
+  source:
+    repository: perl
+    tag: 5
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+- name: python-cache
+  type: docker-image
+  source:
+    repository: python
+    tag: 3
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+- name: ruby-cache
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2-alpine
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+
+jobs:
+- name: hello-world
+  plan:
+  - aggregate:
+    - do:
+      - get: perl-cache
+      - task: hello-perl
+        image: perl-cache
+        params:
+          HELLO: Hello Perl!
+        config:
+          platform: linux
+          run:
+            path: perl
+            args:
+            - -e
+            - |
+              print "$]\n";
+              print "$ENV{'HELLO'}\n";
+    - do:
+      - get: python-cache
+      - task: hello-python
+        image: python-cache
+        params:
+          HELLO: Hello Python!
+        config:
+          platform: linux
+          run:
+            path: python
+            args:
+            - -c
+            - |
+              import platform
+              import os
+              print(platform.python_version())
+              print(os.environ['HELLO'])
+    - do:
+      - get: ruby-cache
+      - task: hello-ruby
+        image: ruby-cache
+        params:
+          HELLO: Hello Ruby!
+        config:
+          platform: linux
+          run:
+            path: ruby
+            args:
+            - -e
+            - |
+              puts RUBY_VERSION
+              puts ENV['HELLO']

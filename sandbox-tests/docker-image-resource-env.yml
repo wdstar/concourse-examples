@@ -1,0 +1,37 @@
+---
+# $ fly -t target sp -p docker-image-resource-env -c docker-image-resource-env.yml -l ~/credentials.yml
+resources:
+- name: docker-image-resource-cache
+  type: docker-image
+  source:
+    repository: concourse/docker-image-resource
+    tag: latest
+    registry_mirror: https://((registry-mirror-domain))  # e.g. https://registry.docker.example.com:5000
+    ca_certs:
+    - domain: ((registry-mirror-domain))  # e.g. registry.docker.example.com:5000
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+
+jobs:
+- name: docker-image-resource-env
+  plan:
+  - get: docker-image-resource-cache
+  - task: echo-env
+    image: docker-image-resource-cache
+    params:
+      http_proxy: ((http-proxy))  # e.g. http://proxy.example.com:3128
+      #HTTP_PROXY: ((http-proxy))
+    config:
+      platform: linux
+      run:
+        path: /bin/sh
+        args:
+        - -c
+        - |
+          uname -a
+          hostname -i
+          docker -v
+          echo '* env'
+          env
+          echo '* mtab'
+          cat /etc/mtab

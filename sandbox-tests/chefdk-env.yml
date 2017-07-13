@@ -1,0 +1,37 @@
+---
+# $ fly -t target sp -p chefdk-env -c chefdk-env.yml -l ~/credentials.yml
+resources:
+- name: chefdk-cache
+  type: docker-image
+  source:
+    repository: chef/chefdk
+    tag: 1.4.3
+    registry_mirror: https://((registry-mirror-domain))  # e.g. https://registry.docker.example.com:5000
+    ca_certs:
+    - domain: ((registry-mirror-domain))  # e.g. registry.docker.example.com:5000
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+
+jobs:
+- name: chefdk-env
+  plan:
+  - get: chefdk-cache
+  - task: echo-env
+    image: chefdk-cache
+    params:
+      http_proxy: ((http-proxy))  # e.g. http://proxy.example.com:3128
+      #HTTP_PROXY: ((http-proxy))
+    config:
+      platform: linux
+      run:
+        path: /bin/sh
+        args:
+        - -c
+        - |
+          uname -a
+          hostname -i
+          chef -v
+          echo '* env'
+          env
+          echo '* mtab'
+          cat /etc/mtab
