@@ -5,6 +5,10 @@ resource_types:
   type: docker-image
   source:
     repository: whitestar/git-resource
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
 
 resources:
 - name: src-git
