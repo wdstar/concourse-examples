@@ -23,6 +23,16 @@ resources:
     - domain: ((registry-mirror-domain))
       cert: ((docker-reg-ca-cert))
   check_every: 12h  # default: 1m
+- name: php-cache
+  type: docker-image
+  source:
+    repository: php
+    tag: 5-zts-alpine  # Compressed size: 23MB
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
 - name: python-cache
   type: docker-image
   source:
@@ -79,6 +89,21 @@ jobs:
             - |
               print "$]\n";
               print "$ENV{'HELLO'}\n";
+    - do:
+      - get: php-cache
+      - task: hello-php
+        image: php-cache
+        params:
+          HELLO: Hello PHP!
+        config:
+          platform: linux
+          run:
+            path: php
+            args:
+            - -r
+            - |
+              print phpversion() . "\n";
+              print getenv('HELLO') . "\n";
     - do:
       - get: python-cache
       - task: hello-python
