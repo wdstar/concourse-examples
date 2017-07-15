@@ -1,11 +1,23 @@
 ---
-# $ fly -t target sp -p scripting-langs -c scripting-langs.yml -l ~/credentials.yml
+# $ fly -t target sp -p scripting-langs -c scripting-langs.yml -l ~/sec/credentials-test.yml
 resources:
+- name: alpine-cache
+  type: docker-image
+  source:
+    repository: alpine
+    tag: latest
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
 - name: perl-cache
   type: docker-image
   source:
-    repository: perl
-    tag: 5
+    repository: whitestar/perl  # Compressed size: 12MB
+    tag: latest
+    #repository: perl
+    #tag: 5  # Very large, compressed size: 260MB
     registry_mirror: https://((registry-mirror-domain))
     ca_certs:
     - domain: ((registry-mirror-domain))
@@ -14,8 +26,10 @@ resources:
 - name: python-cache
   type: docker-image
   source:
-    repository: python
-    tag: 3
+    repository: whitestar/python  # Compressed size: 21MB
+    tag: latest
+    #repository: python
+    #tag: 3  # Very large, compressed size: 270MB
     registry_mirror: https://((registry-mirror-domain))
     ca_certs:
     - domain: ((registry-mirror-domain))
@@ -25,7 +39,7 @@ resources:
   type: docker-image
   source:
     repository: ruby
-    tag: 2-alpine
+    tag: 2-alpine  # Compressed size: 28MB
     registry_mirror: https://((registry-mirror-domain))
     ca_certs:
     - domain: ((registry-mirror-domain))
@@ -36,6 +50,20 @@ jobs:
 - name: hello-world
   plan:
   - aggregate:
+    - do:
+      - get: alpine-cache
+      - task: hello-shell
+        image: alpine-cache
+        params:
+          HELLO: Hello Shell!
+        config:
+          platform: linux
+          run:
+            path: sh
+            args:
+            - -c
+            - |
+              echo $HELLO;
     - do:
       - get: perl-cache
       - task: hello-perl
@@ -60,7 +88,7 @@ jobs:
         config:
           platform: linux
           run:
-            path: python
+            path: python3
             args:
             - -c
             - |
