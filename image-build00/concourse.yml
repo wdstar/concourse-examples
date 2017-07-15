@@ -1,8 +1,15 @@
 ---
-# $ fly -t target sp -p image-build00 -c concourse.yml -l ~/credentials-test.yml
+# $ fly -t target sp -p image-build00 -c concourse.yml -l ~/sec/credentials-test.yml
+resource_types:
+- name: ya-git
+  type: docker-image
+  source:
+    repository: whitestar/git-resource
+
 resources:
 - name: src-git
-  type: git
+  type: ya-git
+  #type: git
   source:
     uri: https://gitlab.io.example.com/concourse/examples.git
     branch: master
@@ -90,8 +97,9 @@ jobs:
         tag_prefix: image-build00-
         tag: tag-ver/version
         only_tag: true
-        #annotate: tag-ver/version  # NG!?
+        annotate: tag-ver/version
         #annotate:   # path to a file containing the annotation message.
+        #  bug: https://github.com/concourse/git-resource/pull/131
     - task: ci-test
       file: src-git/image-build00/ci/test.yml
       image: docker-reg  # overrides the task's image_reosurce.
