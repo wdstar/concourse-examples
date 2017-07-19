@@ -1,0 +1,41 @@
+---
+# $ fly -t target sp -p latest-tag-image-test -c latest-tag-image-test.yml -l ~/sec/credentials-test.yml
+resources:
+- name: buildroot-base
+  type: docker-image
+  source:
+    repository: concourse/buildroot
+    tag: base  # OK
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+- name: buildroot-no-tag
+  type: docker-image
+  source:
+    repository: concourse/buildroot
+    #tag: latest  # Hang!: waiting for a suitable set of input versions. no versions available
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+- name: buildroot-latest
+  type: docker-image
+  source:
+    repository: concourse/buildroot
+    tag: latest  # Hang!: waiting for a suitable set of input versions. no versions available
+    registry_mirror: https://((registry-mirror-domain))
+    ca_certs:
+    - domain: ((registry-mirror-domain))
+      cert: ((docker-reg-ca-cert))
+  check_every: 12h  # default: 1m
+
+jobs:
+- name: latest-tag-image-test
+  plan:
+  - aggregate:
+    - get: buildroot-base
+    - get: buildroot-no-tag
+    - get: buildroot-latest
